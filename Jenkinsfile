@@ -10,14 +10,15 @@ pipeline {
         
         stage('Build Docker') {
             steps {
-                sh 'docker build -t lab4-django-app .'
+                // Используем bat вместо sh
+                bat 'docker build -t lab4-django-app .'
             }
         }
         
         stage('Test') {
             steps {
-                // Запуск тестов. Если тестов нет, команда просто завершится успешно
-                sh 'docker run --rm lab4-django-app python manage.py test || echo "No tests found, skipping..."'
+                // Используем bat вместо sh
+                bat 'docker run --rm lab4-django-app python manage.py test'
             }
         }
     }
