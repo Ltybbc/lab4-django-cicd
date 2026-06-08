@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Удаление записи</title>
+    {% load django_bootstrap5 %} {% bootstrap_css %}
+  </head>
+  <body class="container mt-5 text-center">
+    <div class="card shadow border-danger mx-auto" style="max-width: 500px">
+      <div class="card-body">
+        <h2 class="text-danger mb-4">⚠️ Подтверждение удаления</h2>
+        <p class="lead">
+          Вы уверены, что хотите удалить <strong>"{{ object.name }}"</strong>?
+        </p>
+        <p class="text-muted small">Это действие нельзя будет отменить.</p>
+
+        <form method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger px-4">Да, удалить</button>
+          <a
+            href="{% url 'custom_admin_dashboard' %}"
+            class="btn btn-secondary px-4"
+            >Отмена</a
+          >
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

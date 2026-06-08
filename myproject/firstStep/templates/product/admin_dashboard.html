@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Единая панель управления</title>
+    {% load django_bootstrap5 %} {% bootstrap_css %} {% bootstrap_javascript %}
+  </head>
+  <body class="container mt-5 mb-5 bg-light">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="fw-bold">⚙️ Панель управления кондитерской</h1>
+      <a href="/" class="btn btn-outline-secondary">Вернуться на сайт</a>
+    </div>
+
+    <div class="card shadow-sm mb-5 border-0">
+      <div
+        class="card-header bg-dark text-white d-flex justify-content-between align-items-center"
+      >
+        <h4 class="mb-0">📁 Категории изделий</h4>
+        <a
+          href="{% url 'custom_admin_category_create' %}"
+          class="btn btn-sm btn-success"
+          >+ Новая категория</a
+        >
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th class="text-end">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category in categories %}
+            <tr>
+              <td>{{ category.id }}</td>
+              <td class="fw-bold">{{ category.name }}</td>
+              <td class="text-end">
+                <a
+                  href="{% url 'custom_admin_category_update' category.id %}"
+                  class="btn btn-sm btn-primary"
+                  >✏️ Изменить</a
+                >
+                <a
+                  href="{% url 'custom_admin_category_delete' category.id %}"
+                  class="btn btn-sm btn-danger"
+                  >🗑️ Удалить</a
+                >
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-3">
+                Категорий пока нет.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-5 border-0">
+      <div
+        class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+      >
+        <h4 class="mb-0">🍩 Ассортимент (Продукты)</h4>
+        <a
+          href="{% url 'custom_admin_product_create' %}"
+          class="btn btn-sm btn-success"
+          >+ Добавить продукт</a
+        >
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Категория</th>
+              <th class="text-end">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+            <tr>
+              <td>{{ product.id }}</td>
+              <td class="fw-bold">{{ product.name }}</td>
+              <td>
+                <span class="badge bg-secondary"
+                  >{{ product.category.name }}</span
+                >
+              </td>
+              <td class="text-end">
+                <a
+                  href="{% url 'custom_admin_product_update' product.id %}"
+                  class="btn btn-sm btn-primary"
+                  >✏️ Изменить</a
+                >
+                <a
+                  href="{% url 'custom_admin_product_delete' product.id %}"
+                  class="btn btn-sm btn-danger"
+                  >🗑️ Удалить</a
+                >
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-3">
+                Продуктов пока нет.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-5 border-0">
+      <div
+        class="card-header bg-info text-dark d-flex justify-content-between align-items-center"
+      >
+        <h4 class="mb-0">👨‍🍳 Штат сотрудников</h4>
+        <a
+          href="{% url 'custom_admin_employee_create' %}"
+          class="btn btn-sm btn-success"
+          >+ Нанять сотрудника</a
+        >
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>ID</th>
+              <th>Имя сотрудника</th>
+              <th>Специализация</th>
+              <th class="text-end">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for employee in employees %}
+            <tr>
+              <td>{{ employee.id }}</td>
+              <td class="fw-bold">{{ employee.name }}</td>
+              <td>
+                <span class="badge bg-dark"
+                  >{{ employee.specialization.name }}</span
+                >
+              </td>
+              <td class="text-end">
+                <a
+                  href="{% url 'custom_admin_employee_update' employee.id %}"
+                  class="btn btn-sm btn-primary"
+                  >✏️ Изменить</a
+                >
+                <a
+                  href="{% url 'custom_admin_employee_delete' employee.id %}"
+                  class="btn btn-sm btn-danger"
+                  >🗑️ Удалить</a
+                >
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-3">
+                В штате пока нет сотрудников.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

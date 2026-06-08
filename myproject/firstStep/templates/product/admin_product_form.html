@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% if object %}Изменить{% else %}Создать{% endif %} запись</title>
+    {% load django_bootstrap5 %} {% bootstrap_css %}
+  </head>
+  <body class="container mt-5 w-50">
+    <h2 class="mb-4">
+      {% if object %}✏️ Редактирование: {{ object.name }}{% else %}✨ Создание
+      новой записи{% endif %}
+    </h2>
+
+    <form method="post" class="shadow p-4 bg-light rounded">
+      {% csrf_token %} {% bootstrap_form form %}
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-secondary"
+          >Отмена</a
+        >
+      </div>
+    </form>
+  </body>
+</html>
