@@ -18,7 +18,7 @@ pipeline {
         stage('Test') {
             steps {
                 // Используем bat вместо sh
-                bat 'docker run --rm lab4-django-app python manage.py test'
+                bat 'docker run --rm lab4-django-app python myproject/manage.py test'
             }
         }
     }
