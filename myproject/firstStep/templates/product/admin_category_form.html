@@ -2,17 +2,31 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>{% if object %}Изменить{% else %}Создать{% endif %} запись</title>
+    <title>{% if category %}Изменить{% else %}Создать{% endif %} запись</title>
     {% load django_bootstrap5 %} {% bootstrap_css %}
   </head>
   <body class="container mt-5 w-50">
     <h2 class="mb-4">
-      {% if object %}✏️ Редактирование: {{ object.name }}{% else %}✨ Создание
-      новой записи{% endif %}
+      {% if category %}✏️ Редактирование: {{ category.name }}{% else %}✨
+      Создание новой категории{% endif %}
     </h2>
 
     <form method="post" class="shadow p-4 bg-light rounded">
-      {% csrf_token %} {% bootstrap_form form %}
+      {% csrf_token %} {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="name" class="form-label fw-bold">Название категории</label>
+        <input
+          type="text"
+          name="name"
+          id="name"
+          class="form-control"
+          value="{{ category.name|default_if_none:'' }}"
+          required
+        />
+      </div>
 
       <div class="mt-4">
         <button type="submit" class="btn btn-primary">Сохранить</button>

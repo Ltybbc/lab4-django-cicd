@@ -2,17 +2,61 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>{% if object %}Изменить{% else %}Создать{% endif %} запись</title>
+    <title>{% if employee %}Изменить{% else %}Создать{% endif %} запись</title>
     {% load django_bootstrap5 %} {% bootstrap_css %}
   </head>
   <body class="container mt-5 w-50">
     <h2 class="mb-4">
-      {% if object %}✏️ Редактирование: {{ object.name }}{% else %}✨ Создание
-      новой записи{% endif %}
+      {% if employee %}✏️ Редактирование: {{ employee.name }}{% else %}✨
+      Добавление сотрудника{% endif %}
     </h2>
 
     <form method="post" class="shadow p-4 bg-light rounded">
-      {% csrf_token %} {% bootstrap_form form %}
+      {% csrf_token %} {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="name" class="form-label fw-bold">Имя сотрудника</label>
+        <input
+          type="text"
+          name="name"
+          id="name"
+          class="form-control"
+          value="{{ employee.name|default_if_none:'' }}"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label for="specialization_id" class="form-label fw-bold"
+          >Специализация (Категория)</label
+        >
+        <select
+          name="specialization_id"
+          id="specialization_id"
+          class="form-select"
+          required
+        >
+          <option value="">-- Выберите специализацию --</option>
+          {% for cat in categories %}
+          <option
+            value="{{ cat.id }}"
+            {%
+            if
+            employee
+            and
+            employee.specialization.id=""
+            ="cat.id"
+            %}selected{%
+            endif
+            %}
+          >
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
 
       <div class="mt-4">
         <button type="submit" class="btn btn-primary">Сохранить</button>

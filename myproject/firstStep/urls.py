@@ -23,15 +23,15 @@ urlpatterns = [
     # Панель администратора
     path('custom-admin', views.CustomAdminDashboard.as_view(), name='custom_admin_dashboard'),
 
-    path('custom-admin/products/create/', views.CustomAdminProductCreate.as_view(), name='custom_admin_product_create'),
-    path('custom-admin/products/<int:pk>/update/', views.CustomAdminProductUpdate.as_view(), name='custom_admin_product_update'),
-    path('custom-admin/products/<int:pk>/delete/', views.CustomAdminProductDelete.as_view(), name='custom_admin_product_delete'),
+    path('custom-admin/products/create/', views.ProductCRUDView.as_view(), name='custom_admin_product_create'),
+    path('custom-admin/products/<int:pk>/update/', views.ProductCRUDView.as_view(), name='custom_admin_product_update'),
+    path('custom-admin/products/<int:pk>/delete/', views.ProductDeleteView.as_view(), name='custom_admin_product_delete'),
 
-    path('custom-admin/categories/create/', views.CustomAdminCategoryCreate.as_view(), name='custom_admin_category_create'),
-    path('custom-admin/categories/<int:pk>/update/', views.CustomAdminCategoryUpdate.as_view(), name='custom_admin_category_update'),
-    path('custom-admin/categories/<int:pk>/delete/', views.CustomAdminCategoryDelete.as_view(), name='custom_admin_category_delete'),
+    path('custom-admin/categories/create/', views.CategoryCRUDView.as_view(), name='custom_admin_category_create'),
+    path('custom-admin/categories/<int:pk>/update/', views.CategoryCRUDView.as_view(), name='custom_admin_category_update'),
+    path('custom-admin/categories/<int:pk>/delete/', views.CategoryDeleteView.as_view(), name='custom_admin_category_delete'),
 
-    path('custom-admin/employees/create/', views.CustomAdminEmployeeCreate.as_view(), name='custom_admin_employee_create'),
-    path('custom-admin/employees/<int:pk>/update/', views.CustomAdminEmployeeUpdate.as_view(), name='custom_admin_employee_update'),
-    path('custom-admin/employees/<int:pk>/delete/', views.CustomAdminEmployeeDelete.as_view(), name='custom_admin_employee_delete'),
+    path('custom-admin/employees/create/', views.EmployeeCRUDView.as_view(), name='custom_admin_employee_create'),
+    path('custom-admin/employees/<int:pk>/update/', views.EmployeeCRUDView.as_view(), name='custom_admin_employee_update'),
+    path('custom-admin/employees/<int:pk>/delete/', views.EmployeeDeleteView.as_view(), name='custom_admin_employee_delete'),
 ]
