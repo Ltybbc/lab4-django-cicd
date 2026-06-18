@@ -2,13 +2,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import UserPassesTestMixin
-
+from django.views import View
 # Импорты чистой архитектуры
 from .architecture.repositories import CategoryRepository, ProductRepository, OrderRepository, EmployeeRepository
-from .architecture.use_cases import CreateOrderUseCase, OrderCreationError
+from .architecture.use_cases import CreateOrderUseCase, OrderCreationError, CategoryUseCases, ProductUseCases, EmployeeUseCases, DomainCRUDError
 
-# Импорты моделей только для админки
-from .models import Employee, Product, Order, Category
 
 # ==========================================
 # ЧАСТЬ 1: КЛИЕНТСКИЙ ИНТЕРФЕЙС (ИСПОЛЬЗУЕТ USE CASES)
@@ -61,65 +59,108 @@ class SuperUserRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_superuser
 
-class CustomAdminDashboard(SuperUserRequiredMixin, TemplateView):
-    template_name = 'product/admin_dashboard.html'
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['products'] = Product.objects.all()
-        context['categories'] = Category.objects.all()
-        context['employees'] = Employee.objects.all()
-        return context
+# ==========================================
+# DASHBOARD (Отображение всего)
+# ==========================================
+class CustomAdminDashboard(SuperUserRequiredMixin, View):
+    def get(self, request):
+        context = {
+            'categories': CategoryRepository().get_all(),
+            'products': ProductRepository().get_all(),
+            'employees': EmployeeRepository().get_all()
+        }
+        return render(request, 'product/admin_dashboard.html', context)
 
-# --- Products ---
-class CustomAdminProductCreate(SuperUserRequiredMixin, CreateView):
-    model = Product
-    fields = ['name', 'category']
-    template_name = 'product/admin_product_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
 
-class CustomAdminProductUpdate(SuperUserRequiredMixin, UpdateView):
-    model = Product
-    fields = ['name', 'category']
-    template_name = 'product/admin_product_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+# --- КАТЕГОРИИ ---
+class CategoryCRUDView(SuperUserRequiredMixin, View):
+    def get(self, request, pk=None):
+        context = {}
+        if pk: context['category'] = CategoryRepository().get_by_id(pk)
+        return render(request, 'product/admin_category_form.html', context)
 
-class CustomAdminProductDelete(SuperUserRequiredMixin, DeleteView):
-    model = Product
-    template_name = 'product/admin_product_confirm_delete.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+    def post(self, request, pk=None):
+        name = request.POST.get('name', '')
+        use_cases = CategoryUseCases(CategoryRepository())
+        try:
+            if pk: use_cases.update(pk, name)
+            else: use_cases.create(name)
+            return redirect('custom_admin_dashboard')
+        except DomainCRUDError as e:
+            context = {'error': str(e), 'category': CategoryRepository().get_by_id(pk) if pk else None}
+            return render(request, 'product/admin_category_form.html', context)
 
-# --- Categories ---
-class CustomAdminCategoryCreate(SuperUserRequiredMixin, CreateView):
-    model = Category
-    fields = ['name']
-    template_name = 'product/admin_category_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+class CategoryDeleteView(SuperUserRequiredMixin, View):
+    def get(self, request, pk):
+        # GET-запрос: показываем страницу подтверждения
+        category = CategoryRepository().get_by_id(pk)
+        return render(request, 'product/admin_category_confirm_delete.html', {'category': category})
 
-class CustomAdminCategoryUpdate(SuperUserRequiredMixin, UpdateView):
-    model = Category
-    fields = ['name']
-    template_name = 'product/admin_category_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+    def post(self, request, pk):
+        # POST-запрос: физически удаляем
+        CategoryUseCases(CategoryRepository()).delete(pk)
+        return redirect('custom_admin_dashboard')
 
-class CustomAdminCategoryDelete(SuperUserRequiredMixin, DeleteView):
-    model = Category
-    template_name = 'product/admin_category_confirm_delete.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+# --- ПРОДУКТЫ ---
+class ProductCRUDView(SuperUserRequiredMixin, View):
+    def get(self, request, pk=None):
+        context = {'categories': CategoryRepository().get_all()}
+        if pk: context['product'] = ProductRepository().get_by_id(pk)
+        return render(request, 'product/admin_product_form.html', context)
 
-# --- Employees ---
-class CustomAdminEmployeeCreate(SuperUserRequiredMixin, CreateView):
-    model = Employee
-    fields = ['name', 'specialization']
-    template_name = 'product/admin_employee_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+    def post(self, request, pk=None):
+        name = request.POST.get('name', '')
+        category_id = int(request.POST.get('category_id', 0) or 0)
+        use_cases = ProductUseCases(ProductRepository(), CategoryRepository())
+        try:
+            if pk: use_cases.update(pk, name, category_id)
+            else: use_cases.create(name, category_id)
+            return redirect('custom_admin_dashboard')
+        except DomainCRUDError as e:
+            context = {
+                'error': str(e), 
+                'categories': CategoryRepository().get_all(),
+                'product': ProductRepository().get_by_id(pk) if pk else None
+            }
+            return render(request, 'product/admin_product_form.html', context)
 
-class CustomAdminEmployeeUpdate(SuperUserRequiredMixin, UpdateView):
-    model = Employee
-    fields = ['name', 'specialization']
-    template_name = 'product/admin_employee_form.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+class ProductDeleteView(SuperUserRequiredMixin, View):
+    def get(self, request, pk):
+        product = ProductRepository().get_by_id(pk)
+        return render(request, 'product/admin_product_confirm_delete.html', {'product': product})
 
-class CustomAdminEmployeeDelete(SuperUserRequiredMixin, DeleteView):
-    model = Employee
-    template_name = 'product/admin_employee_confirm_delete.html'
-    success_url = reverse_lazy('custom_admin_dashboard')
+    def post(self, request, pk):
+        ProductUseCases(ProductRepository(), CategoryRepository()).delete(pk)
+        return redirect('custom_admin_dashboard')
+
+# --- СОТРУДНИКИ ---
+class EmployeeCRUDView(SuperUserRequiredMixin, View):
+    def get(self, request, pk=None):
+        context = {'categories': CategoryRepository().get_all()}
+        if pk: context['employee'] = EmployeeRepository().get_by_id(pk)
+        return render(request, 'product/admin_employee_form.html', context)
+
+    def post(self, request, pk=None):
+        name = request.POST.get('name', '')
+        specialization_id = int(request.POST.get('specialization_id', 0) or 0)
+        use_cases = EmployeeUseCases(EmployeeRepository(), CategoryRepository())
+        try:
+            if pk: use_cases.update(pk, name, specialization_id)
+            else: use_cases.create(name, specialization_id)
+            return redirect('custom_admin_dashboard')
+        except DomainCRUDError as e:
+            context = {
+                'error': str(e), 
+                'categories': CategoryRepository().get_all(),
+                'employee': EmployeeRepository().get_by_id(pk) if pk else None
+            }
+            return render(request, 'product/admin_employee_form.html', context)
+
+class EmployeeDeleteView(SuperUserRequiredMixin, View):
+    def get(self, request, pk):
+        employee = EmployeeRepository().get_by_id(pk)
+        return render(request, 'product/admin_employee_confirm_delete.html', {'employee': employee})
+
+    def post(self, request, pk):
+        EmployeeUseCases(EmployeeRepository(), CategoryRepository()).delete(pk)
+        return redirect('custom_admin_dashboard')
